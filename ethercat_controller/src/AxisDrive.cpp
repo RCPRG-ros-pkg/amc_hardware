@@ -288,6 +288,7 @@ void AxisDrive::configureHoming()
 	uint8 homingMethod = 4;
 	ec_SDOwrite(slaveId_, 0x6098, 0x00, FALSE, sizeof(homingMethod), &homingMethod, EC_TIMEOUTRXM);
 
+/*
 	if (homingMethod == 35)
 	{
 		int32 measuredPosition = 0;
@@ -296,7 +297,7 @@ void AxisDrive::configureHoming()
 		int32 homePosition = 0;
 		ec_SDOwrite(slaveId_, 0x2039, 0x02, FALSE, sizeof(homePosition), &homePosition, EC_TIMEOUTRXM);
 	}
-
+*/
 	// 6099.01h: Speed During Search For Switch (uint32, DS4)
 	uint32 speedSwitch = DS4toDrive(4000);
 	ec_SDOwrite(slaveId_, 0x6099, 0x01, FALSE, sizeof(speedSwitch), &speedSwitch, EC_TIMEOUTRXM);
@@ -322,12 +323,7 @@ bool AxisDrive::beginHoming()
 	DriveState old = getState();
 	if (old == ReadyToSwitchOn)
 	{
-		// reset Homing Complete flag
-		uint16 word = 0x4000;
-		ec_SDOwrite(slaveId_, 0x2003, 0x05, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
-
 		enterMode(Homing);
-
 		return enterStateNoCheck(BeginHoming);
 	}
 	RTT::log(RTT::Error) << "AxisDrive::beginHoming: wrong state" << RTT::endlog();
@@ -350,8 +346,9 @@ bool AxisDrive::isHomingCompleted()
 	uint16 word = 0;
 	int size = 0;
 	size = sizeof(word);
-	ec_SDOread(slaveId_, 0x2003, 0x05, FALSE, &size, &word, EC_TIMEOUTRXM);
-	return ((0x4000&word) != 0);
+
+	ec_SDOread(slaveId_, StatusWord, 0x00, FALSE, &size, &word, EC_TIMEOUTRXM);
+	return (word&SW_HomingComplete_Mask)!=0;
 }
 
 void AxisDrive::enterMode(Mode mode)
