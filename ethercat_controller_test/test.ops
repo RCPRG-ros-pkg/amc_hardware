@@ -1,44 +1,15 @@
 import("rtt_ros")
+ros.import("rtt_rosparam")
 ros.import("ethercat_controller")
-ros.import("ethercat_controller_test")
 
 ## Load a BarrettHand component
-loadComponent("AmcDriver","AmcDriver")
-loadComponent("AmcTest","AmcTest")
+loadComponent("EC","ECMaster")
+setActivity("EC", 0.001, 5, ORO_SCHED_RT)
+EC.loadService("rosparam")
+EC.rosparam.getAll()
 
-#AmcDriver.mode = "current";
-#AmcDriver.mode = "velocity";
-AmcDriver.mode = "position";
-AmcDriver.device_name = "rteth0"
+EC.configure()
+EC.rosparam.getAll()
 
-## Give it a periodic activity
-setActivity("AmcDriver",0.001,2,ORO_SCHED_RT)
-setActivity("AmcTest",0.001,1,ORO_SCHED_OTHER)
-
-connectPeers("AmcDriver", "AmcTest");
-
-## Configure the HelloRobot component
-AmcDriver.configure()
-AmcTest.configure()
-
-# See the Doxygen API documentation of RTT for the fields of this struct:
-var ConnPolicy cp_1;
-# set the fields of cp_1 to an application-specific value:
-cp_1.type = BUFFER;  # Use BUFFER or DATA
-cp_1.size = 10;      # size of the buffer
-cp_1.lock_policy = UNSYNC; # Use  LOCKED, LOCK_FREE or UNSYNC
-# other fields exist too...
- 
-# Start connecting ports:
-connect("AmcDriver.joint_current_command",	"AmcTest.joint_current_command", cp_1);
-connect("AmcDriver.joint_current",		"AmcTest.joint_current", cp_1);
-connect("AmcDriver.joint_velocity_command",	"AmcTest.joint_velocity_command", cp_1);
-connect("AmcDriver.joint_velocity",		"AmcTest.joint_velocity", cp_1);
-connect("AmcDriver.joint_position_command",	"AmcTest.joint_position_command", cp_1);
-connect("AmcDriver.joint_position",		"AmcTest.joint_position", cp_1);
-
-## Start it
-AmcDriver.start()
-AmcTest.start()
-
+EC.start()
 

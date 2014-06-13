@@ -1,20 +1,28 @@
 #if !defined(AXIS_DRIVE_H)
 #define AXIS_DRIVE_H
 
+#include "ethercat_driver.h"
+
+#include <rtt/Port.hpp>
+
 #include <ethercattype.h>
 
-class AxisDrive
+class AxisDrive : public ECDriver
 {
-protected:
-
 public:
 	enum DriveState {Unknown, NotReadyToSwitchOn, SwitchOnDisabled, ReadyToSwitchOn, SwitchedOn, OperationEnabled, Fault, QuickStopActive};
 	enum StateCommand {ResetFault, DisableVoltage, ShutDown, SwitchOn, EnableOperation, QuickStop, BeginHoming};
 	enum Mode {ProfilePosition=0x01, ProfileVelocity=0x03, ProfileTorque=0x04, Homing=0x06, CyclicSynchronousPosition=0x08, CyclicSynchronousVelocity=0x09, CyclicSynchronousTorque=0x0A, Config0=0x9E, Config1=0xDE, None=0xFF};
 
-	AxisDrive();
+	AxisDrive(const std::string &neme, ecx_contextt* contextt_ptr, uint16_t slave_id);
 	~AxisDrive();
-	bool init(uint16 slaveId);
+	bool configure();
+	bool start();
+	void update();
+	void stop();
+	
+private:
+	
 	DriveState getState();
 
 	bool enterState(StateCommand cmd);
@@ -40,7 +48,8 @@ public:
 	void printState(DriveState state);
 	void readEvents();
 	void printDriveStatus();
-
+  bool enableOperation();
+  void processStatus();
 protected:
 	DriveState translateState(uint16 statusWord);
 	bool enterStateNoCheck(StateCommand cmd);
@@ -82,7 +91,6 @@ protected:
 	int16 DC2toDrive(double dc2);
 	double DrivetoDC2(int16 drive);
 
-	uint16 slaveId_;
 	Mode actualMode_;
 	Mode mode_;
 	uint16 conv_KB;
@@ -103,6 +111,24 @@ protected:
 	double conv_DC2;
 
 	double encTicks;
+	
+	bool homing_compleat_;
+	int servo_state_;
+	
+	bool enable_;
+	bool homing_;
+	
+	std::string mode_param_;
+	
+	StateCommand target_state_;
+	
+	RTT::OutputPort<double> port_motor_position_;
+	RTT::OutputPort<double> port_motor_velocity_;
+	RTT::OutputPort<double> port_motor_current_;
+	
+	RTT::InputPort<double> port_motor_position_command_;
+	RTT::InputPort<double> port_motor_velocity_command_;
+	RTT::InputPort<double> port_motor_current_command_;
 };
 
 #endif	// AXIS_DRIVE_H

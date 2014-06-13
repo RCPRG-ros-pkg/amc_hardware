@@ -241,7 +241,7 @@ void AxisDrive::readEvents()
 	int size = sizeof(ev);
 	for (int i=0; i<48; ++i)
 	{
-		ec_SDOread(slaveId_, 0x2065, i+1, FALSE, &size, &ev, EC_TIMEOUTRXM);
+		ecx_SDOread(contextt_ptr_, slave_id_, 0x2065, i+1, FALSE, &size, &ev, EC_TIMEOUTRXM);
 		RTT::log(RTT::Info) << eventActionStrings[i] << "(" << actionsStrings[ev] << "), ";
 	}
 	RTT::log(RTT::Info) << RTT::endlog();
@@ -252,28 +252,28 @@ void AxisDrive::readPositionLimits()
 	printf("readPositionLimits():\n");
 	int32 pos = 0;
 	int size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2039, 0x03, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2039, 0x03, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Max Measured Position Limit: %d\n", pos);
 	size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2039, 0x04, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2039, 0x04, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Min Measured Position Limit: %d\n", pos);
 	size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2039, 0x08, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2039, 0x08, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Max Target Position Limit:   %d\n", pos);
 	size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2039, 0x09, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2039, 0x09, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Min Target Position Limit:   %d\n", pos);
 	size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2037, 0x01, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2037, 0x01, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Motor Over Speed Limit:      %d\n", pos);
 	size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2037, 0x02, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2037, 0x02, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Zero Speed Limit:      %d\n", pos);
 	size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2037, 0x05, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2037, 0x05, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Positive Velocity Limit:      %d\n", pos);
 	size = sizeof(pos);
-	ec_SDOread(slaveId_, 0x2037, 0x06, FALSE, &size, &pos, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2037, 0x06, FALSE, &size, &pos, EC_TIMEOUTRXM);
 	printf(" Negative Velocity Limit:      %d\n", pos);
 }
 
@@ -289,32 +289,32 @@ void AxisDrive::printDriveStatus()
 	printf("driveStatus: ");
 	int size = 2;
 	uint16 word = 0x0000;
-	ec_SDOread(slaveId_, 0x2002, 0x01, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2002, 0x01, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveBridgeStatusHistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2002, 0x02, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2002, 0x02, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveProtectionStatusHistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2002, 0x03, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2002, 0x03, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", systemProtectionStatusHistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2002, 0x04, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2002, 0x04, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveSystemStatus1HistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2002, 0x05, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2002, 0x05, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveSystemStatus2HistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2002, 0x06, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2002, 0x06, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveSystemStatus3HistoryStrings[i]);
@@ -333,39 +333,39 @@ void AxisDrive::readHistory()
 	printf("readHistory(): ");
 	int size = 2;
 	uint16 word = 0x0000;
-	ec_SDOread(slaveId_, 0x2003, 0x01, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2003, 0x01, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveBridgeStatusHistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2003, 0x02, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2003, 0x02, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveProtectionStatusHistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2003, 0x03, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2003, 0x03, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", systemProtectionStatusHistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2003, 0x04, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2003, 0x04, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveSystemStatus1HistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2003, 0x05, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2003, 0x05, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveSystemStatus2HistoryStrings[i]);
 	size = 2;
-	ec_SDOread(slaveId_, 0x2003, 0x06, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2003, 0x06, FALSE, &size, &word, EC_TIMEOUTRXM);
 	for (int i=0; i<16;++i)
 		if ( (word&(1<<i)) != 0 )
 			printf("%s, ", driveSystemStatus3HistoryStrings[i]);
 	printf("\n");
 
 	size = 2;
-	ec_SDOread(slaveId_, 0x2028, 0x11, FALSE, &size, &word, EC_TIMEOUTRXM);
+	ecx_SDOread(contextt_ptr_, slave_id_, 0x2028, 0x11, FALSE, &size, &word, EC_TIMEOUTRXM);
 	printf(" Log Counter: Software Disable: %d\n", (int)word);
 
 	resetHistory();
@@ -383,12 +383,12 @@ void AxisDrive::resetHistory()
 
 	printf("resetHistory()\n");
 	uint16 word = 0xFFFF;
-	ec_SDOwrite(slaveId_, 0x2003, 0x01, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
-	ec_SDOwrite(slaveId_, 0x2003, 0x02, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
-	ec_SDOwrite(slaveId_, 0x2003, 0x03, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
-	ec_SDOwrite(slaveId_, 0x2003, 0x04, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
-	ec_SDOwrite(slaveId_, 0x2003, 0x05, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
-	ec_SDOwrite(slaveId_, 0x2003, 0x06, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
+	ecx_SDOwrite(contextt_ptr_, slave_id_, 0x2003, 0x01, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
+	ecx_SDOwrite(contextt_ptr_, slave_id_, 0x2003, 0x02, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
+	ecx_SDOwrite(contextt_ptr_, slave_id_, 0x2003, 0x03, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
+	ecx_SDOwrite(contextt_ptr_, slave_id_, 0x2003, 0x04, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
+	ecx_SDOwrite(contextt_ptr_, slave_id_, 0x2003, 0x05, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
+	ecx_SDOwrite(contextt_ptr_, slave_id_, 0x2003, 0x06, FALSE, sizeof(word), &word, EC_TIMEOUTRXM);
 }
 
 void AxisDrive::printState(AxisDrive::DriveState state)

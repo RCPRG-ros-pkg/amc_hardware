@@ -1,8 +1,21 @@
 <launch>
   <include file="$(find rtt_ros)/launch/deployer.launch">
+    <arg name="NAME" value="ec_controller"/>
     <arg name="DEPLOYER_ARGS" value="-s $(find ethercat_controller_test)/test.ops"/>
     <arg name="LOG_LEVEL" value="warning"/>
     <arg name="DEBUG" value="false"/>
   </include>
-</launch>
 
+
+  <group ns="ec_controller">
+    <rosparam>
+      EC:
+        names: [torso]
+        torso:
+          mode: current
+      FRIr:
+        fri_port: 49948
+    </rosparam>
+  </group>
+
+</launch>
