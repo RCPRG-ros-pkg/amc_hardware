@@ -84,6 +84,11 @@ AxisDrive::AxisDrive(const std::string &name, ecx_contextt* contextt_ptr, uint16
 	this->provides()->addPort("MotorVelocityCommand", port_motor_velocity_command_);
 	this->provides()->addPort("MotorCurrentCommand", port_motor_current_command_);
 	
+	this->provides()->addPort("DigitalOutput1", port_do1_command_);
+	this->provides()->addPort("DigitalOutput2", port_do2_command_);
+	this->provides()->addPort("DigitalOutput3", port_do3_command_);
+	this->provides()->addPort("DigitalOutput4", port_do4_command_);
+	
 	this->provides()->addOperation("beginHoming",	&AxisDrive::beginHoming, this, RTT::OwnThread);
 	//this->provides()->addOperation("isHomingComplete",	&AxisDrive::isHomingComplete, this, RTT::OwnThread);
 	this->provides()->addOperation("enableOperation",	&AxisDrive::enableOperation, this, RTT::OwnThread);
@@ -204,6 +209,40 @@ void AxisDrive::update() {
   if (port_motor_current_command_.read(current) == RTT::NewData) {
     bool offset = (actualMode_ == CyclicSynchronousPosition) || (actualMode_ == CyclicSynchronousVelocity);
     setCurrent(current, offset);
+  }
+  
+  bool dio;
+  
+  if (port_do1_command_.read(dio) == RTT::NewData) {
+    if (dio) {
+      rpdo_->userBits |= 1<<0;
+    } else {
+      rpdo_->userBits &= ~(1<<0);
+    }
+  }
+  
+  if (port_do2_command_.read(dio) == RTT::NewData) {
+    if (dio) {
+      rpdo_->userBits |= 1<<1;
+    } else {
+      rpdo_->userBits &= ~(1<<1);
+    }
+  }
+  
+  if (port_do3_command_.read(dio) == RTT::NewData) {
+    if (dio) {
+      rpdo_->userBits |= 1<<2;
+    } else {
+      rpdo_->userBits &= ~(1<<2);
+    }
+  }
+  
+  if (port_do4_command_.read(dio) == RTT::NewData) {
+    if (dio) {
+      rpdo_->userBits |= 1<<3;
+    } else {
+      rpdo_->userBits &= ~(1<<3);
+    }
   }
   
   port_motor_position_.write(getActualPosition());
@@ -475,7 +514,7 @@ double AxisDrive::getActualCurrent()
 
 double AxisDrive::getActualVelocity()
 {
-	return DrivetoDS4(tpdo_->actualVelocity)/encTicks;
+	return DrivetoDS4(tpdo_->actualVelocity);
 }
 
 double AxisDrive::getActualPosition()

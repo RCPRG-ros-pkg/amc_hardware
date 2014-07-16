@@ -4,10 +4,6 @@ project(ethercat_controller_test)
 find_package(catkin REQUIRED COMPONENTS
   roscpp rtt_ros rtt_roscomm)
 
-ros_generate_rtt_typekit(${PROJECT_NAME})
-
-catkin_package()
-
 include_directories(include ${catkin_INCLUDE_DIRS} ${BOOST_INCLUDE_DIRS})
 
 install(FILES 

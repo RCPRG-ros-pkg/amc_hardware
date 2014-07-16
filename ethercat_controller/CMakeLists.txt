@@ -6,10 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen REQUIRED)
 
-ros_generate_rtt_typekit(${PROJECT_NAME})
-
-catkin_package()
-
 include_directories(include ${catkin_INCLUDE_DIRS} ${BOOST_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 
 orocos_component(ecmaster src/ecmaster.cpp src/AxisDrive.cpp src/AxisDrive_debug.cpp)

@@ -129,6 +129,11 @@ protected:
 	RTT::InputPort<double> port_motor_position_command_;
 	RTT::InputPort<double> port_motor_velocity_command_;
 	RTT::InputPort<double> port_motor_current_command_;
+	
+	RTT::InputPort<bool> port_do1_command_;
+	RTT::InputPort<bool> port_do2_command_;
+	RTT::InputPort<bool> port_do3_command_;
+	RTT::InputPort<bool> port_do4_command_;
 };
 
 #endif	// AXIS_DRIVE_H
