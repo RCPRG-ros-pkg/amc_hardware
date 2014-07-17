@@ -122,6 +122,8 @@ protected:
 	
 	StateCommand target_state_;
 	
+	bool position_valid_;
+	
 	RTT::OutputPort<double> port_motor_position_;
 	RTT::OutputPort<double> port_motor_velocity_;
 	RTT::OutputPort<double> port_motor_current_;

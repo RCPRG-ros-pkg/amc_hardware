@@ -61,7 +61,8 @@ AxisDrive::AxisDrive(const std::string &name, ecx_contextt* contextt_ptr, uint16
 	servo_state_(0),
 	mode_(CyclicSynchronousPosition),
 	enable_(false),
-	homing_(false)
+	homing_(false),
+	position_valid_(false)
 {
 	rpdo_=(RPDO*)contextt_ptr->slavelist[slave_id].outputs;
 	tpdo_=(TPDO*)contextt_ptr->slavelist[slave_id].inputs;
@@ -156,6 +157,13 @@ bool AxisDrive::configure() {
 	size = sizeof(mantissa);
 	ecx_SDOwrite(contextt_ptr_, slave_id_, 0x60C2, 0x01, FALSE, size, &mantissa, EC_TIMEOUTRXM);
 
+  uint16_t stat;
+  size = sizeof(stat);
+  
+  ecx_SDOread(contextt_ptr_, slave_id_, 0x2002, 0x07, FALSE, &size, &stat, EC_TIMEOUTRXM);
+
+  position_valid_ = (stat & 1) == 1;
+
 	return true;
 }
 
@@ -185,13 +193,19 @@ void AxisDrive::update() {
 		target_state_ = SwitchOn;
 	} else if (getState() == AxisDrive::SwitchedOn) {
 	  //std::cout << "homing : " << target_state_  << std::endl;
-	  enterMode(Homing);
-	  target_state_ = BeginHoming;
-	  homing_ = true;
+	  if (position_valid_) {
+	    enterMode(mode_);
+	    target_state_ = EnableOperation;
+	  } else {
+	    enterMode(Homing);
+	    target_state_ = BeginHoming;
+	    homing_ = true;
+	  }
 	}
 	
-	if (isHomingCompleted()) {
+	if ((actualMode_ == Homing) && isHomingCompleted()) {
 	  homing_ = false;
+	  position_valid_ = true;
 	  enterMode(mode_);
 	  target_state_ = EnableOperation;
 	}
@@ -245,9 +259,11 @@ void AxisDrive::update() {
     }
   }
   
-  port_motor_position_.write(getActualPosition());
-  port_motor_velocity_.write(getActualVelocity());
-  port_motor_current_.write(getActualCurrent());
+  if (position_valid_) {
+    port_motor_position_.write(getActualPosition());
+    port_motor_velocity_.write(getActualVelocity());
+    port_motor_current_.write(getActualCurrent());
+  }
 }
 
 void AxisDrive::stop() {
@@ -458,7 +474,12 @@ void AxisDrive::waitForHomingComplete()
 
 bool AxisDrive::isHomingCompleted()
 {
-	return (tpdo_->statusWord & SW_HomingComplete_Mask)!=0;
+
+  if (actualMode_ == Homing) {
+	  return (tpdo_->statusWord & SW_HomingComplete_Mask)!=0;
+	} else {
+	  return false;
+	}
 }
 
 void AxisDrive::enterMode(Mode mode)
