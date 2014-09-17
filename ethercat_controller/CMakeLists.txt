@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ethercat_controller)
 
-find_package(catkin REQUIRED COMPONENTS
-  rtt_ros soem)
+find_package(catkin REQUIRED COMPONENTS rtt_ros soem cmake_modules)
 
 find_package(Eigen REQUIRED)
 
