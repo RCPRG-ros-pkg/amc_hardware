@@ -9,7 +9,7 @@ find_package(Xenomai REQUIRED)
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${BOOST_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 
-orocos_component(ecmaster src/ecmaster.cpp src/AxisDrive.cpp src/AxisDrive_debug.cpp)
+orocos_component(ecmaster src/ecmaster.cpp src/amc_driver.cpp src/amc_subnode.cpp)
 target_link_libraries(ecmaster ${catkin_LIBRARIES} soem ${Xenomai_RTDM_LIBRARIES})
 
 orocos_generate_package()

@@ -1,6 +1,6 @@
 
 #include "ecmaster.h"
-#include "AxisDrive.h"
+#include "amc_driver.h"
 #include <rtt/Component.hpp>
 
 ECMaster::ECMaster(const std::string& name) : RTT::TaskContext(name), EcatError_(FALSE), iface_("rteth0"), slaves_property_("slaves", "slaves") {
@@ -29,9 +29,16 @@ ECMaster::ECMaster(const std::string& name) : RTT::TaskContext(name), EcatError_
  this->provides()->addConstant("state", ec_slave_[0].state);
  this->provides()->addProperty("iface", iface_);
  this->properties()->addProperty("names", names_);
+ this->provides()->addOperation("printIOMAP",	&ECMaster::printIOMAP, this, RTT::OwnThread);
 }
 
 ECMaster::~ECMaster() {
+}
+
+void ECMaster::printIOMAP() {
+  for (int i = 0; i < 4096; i++) {
+    printf("IOMAP[%d] %X\n", i, (int)io_map_[i]);
+  }
 }
 
 bool ECMaster::configureHook() {
@@ -54,6 +61,8 @@ bool ECMaster::configureHook() {
     return false;
   }
   
+  ret = ecx_configdc(&ec_context_);
+  
   RTT::log(RTT::Info) << ec_slavecount_ << " slaves found and configured."
                     << RTT::endlog();
   
@@ -74,7 +83,7 @@ bool ECMaster::configureHook() {
   drivers_.resize(ec_slavecount_);
   
   for (int i = 1; i <= ec_slavecount_; i++) {
-    drivers_[i-1] = new AxisDrive(names_[i-1], &ec_context_, i);
+    drivers_[i-1] = new AMCDriver(names_[i-1], &ec_context_, i);
     this->provides()->addService(drivers_[i-1]->provides());
     if (!drivers_[i-1]->configure()) {
       return false;
@@ -123,7 +132,13 @@ bool ECMaster::startHook() {
   }
   RTT::log(RTT::Info) << "Safe operational state reached for all slaves."
                       << RTT::endlog();
-                      
+  
+  for (int i = 0; i < ec_slavecount_; i++) {
+    if(!drivers_[i]->start()) {
+      return false;
+    }
+  }
+  
   RTT::log(RTT::Info) << "Request operational state for all slaves" << RTT::endlog();
   ec_slave_[0].state = EC_STATE_OPERATIONAL;
 
@@ -155,18 +170,12 @@ bool ECMaster::startHook() {
   //  return false;
   //}
   RTT::log(RTT::Info) << "Operational state reached for all slaves."
-                      << RTT::endlog();
-                      
-  for (int i = 0; i < ec_slavecount_; i++) {
-    if(!drivers_[i]->start()) {
-      return false;
-    }
-  }
-                      
+                      << RTT::endlog();                      
   return true;
 }
 
 void ECMaster::updateHook() {
+/*
     bool success = true;
     int ret = 0;
     if (ecx_receive_processdata(&ec_context_, EC_TIMEOUTRET) == 0) {
@@ -182,6 +191,33 @@ void ECMaster::updateHook() {
         success = false;
         RTT::log(RTT::Warning) << "sending process data failed" << RTT::endlog();
     }
+    */
+    
+  bool success = true;
+  int ret = 0;
+  if (ecx_send_processdata(&ec_context_) == 0) {
+    success = false;
+    RTT::log(RTT::Warning) << "sending process data failed" << RTT::endlog();
+  }
+  
+  if (ecx_receive_processdata(&ec_context_, EC_TIMEOUTRET) == 0) {
+    success = false;
+    RTT::log(RTT::Warning) << "receiving data failed" << RTT::endlog();
+  }
+
+  for (int i = 1; i < ec_slavecount_; i++) {
+    ec_mbxbuft MbxIn;
+    ec_clearmbx(&MbxIn);
+    ecx_mbxreceive(&ec_context_, i, &MbxIn, 0);
+  }
+  if (success)
+    for (unsigned int i = 0; i < drivers_.size(); i++)
+      drivers_[i]->update();
+  //ecx_dcsyncmaster(&ec_context_);
+  //ecx_dcsyncslaves(&ec_context_);
+  if (ecx_iserror(&ec_context_) == TRUE) {
+    RTT::log(RTT::Error) << ecx_elist2string(&ec_context_) << RTT::endlog();
+  }
 }
 
 void ECMaster::stopHook() {

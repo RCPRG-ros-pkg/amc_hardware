@@ -44,6 +44,9 @@ public:
   virtual void stop() {
   }
   
+  virtual void cleanup() {
+  }
+  
   RTT::Service::shared_ptr provides() {
     return service_;
   }

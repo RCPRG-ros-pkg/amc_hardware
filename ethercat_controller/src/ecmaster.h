@@ -28,7 +28,7 @@ public:
 	void updateHook();
 	void stopHook();	
 private:
-
+  void printIOMAP();
   void ecError(int ret);
 
   ecx_contextt ec_context_;

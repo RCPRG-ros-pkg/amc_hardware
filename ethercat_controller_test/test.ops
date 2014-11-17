@@ -2,14 +2,10 @@ import("rtt_ros")
 ros.import("rtt_rosparam")
 ros.import("ethercat_controller")
 
-## Load a BarrettHand component
 loadComponent("EC","ECMaster")
 setActivity("EC", 0.001, 5, ORO_SCHED_RT)
 EC.loadService("rosparam")
 EC.rosparam.getAll()
 
 EC.configure()
-EC.rosparam.getAll()
-
-EC.start()
 
